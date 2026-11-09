@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Sword_attack : MonoBehaviour
 {
@@ -8,26 +9,58 @@ public class Sword_attack : MonoBehaviour
     public float CircleRadius = 1.0f;
     public float ElevationOffset = 0.0f;
 
+    public InputActionAsset InputActions;
+    private InputAction playerAttackAction;
+
     private Vector3 positionOffset;
     private float angle;
-    
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
+    private bool attacking = false;
+
+    private void OnEnable()
+    {
+        InputActions.FindActionMap("Player").Enable();
+
+    }
+
+    private void OnDisable()
+    {
+        InputActions.FindActionMap("Player").Disable();
+    }
+
+    private void Awake()
+    {
+        playerAttackAction = InputSystem.actions.FindAction("Attack");
+    }
+
     void LateUpdate()
     {
-        positionOffset.Set(Mathf.Cos(angle) * CircleRadius,
-            ElevationOffset,
-            Mathf.Sin(angle) * CircleRadius);
-        transform.position = Target.position + positionOffset;
-        //change the angle of the blade z needs to be the thing that moves
-       // Quaternion newRotation = transform.rotation;
+        if (playerAttackAction.WasPressedThisFrame())
+        {
+            attacking = true;
+        }
+        if (angle < 3.0 && attacking == true)
+        {
+            positionOffset.Set(Mathf.Cos(angle) * CircleRadius,
+                ElevationOffset,
+                Mathf.Sin(angle) * CircleRadius);
+            transform.position = Target.position + positionOffset;
 
-        Vector3 outwardDirection = transform.position - Target.position;
-        //newRotation.z = Quaternion.LookRotation(outwardDirection).z;
-        
-        //newRotation.z = 90 + angle;
-        transform.rotation = Quaternion.LookRotation(outwardDirection);
-        
-        angle += Time.deltaTime * RotationSpeed;
-        Debug.Log("PositionOffset" + positionOffset);
+            //change the angle of the blade
+            Vector3 outwardDirection = transform.position - Target.position;
+
+            transform.rotation = Quaternion.LookRotation(outwardDirection);
+
+            angle += Time.deltaTime * RotationSpeed;
+            Debug.Log("PositionOffset" + positionOffset);
+        }
+        else
+        {
+            angle = 1 * Target.rotation.y;
+            attacking = false;
+        }
+
     }
+
+    
 }
