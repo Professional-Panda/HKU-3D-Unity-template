@@ -19,12 +19,13 @@ public class Sword_attack : MonoBehaviour
     private float distanceSwung;
     public float swingLength = 3.5f;
 
+    public MeshRenderer swordMesh;
+
     private bool attacking = false;
 
     private void OnEnable()
     {
         InputActions.FindActionMap("Player").Enable();
-
     }
 
     private void OnDisable()
@@ -35,37 +36,43 @@ public class Sword_attack : MonoBehaviour
     private void Awake()
     {
         playerAttackAction = InputSystem.actions.FindAction("Attack");
+        swordMesh.enabled = false;
     }
 
     void LateUpdate()
     {
         if (playerAttackAction.WasPressedThisFrame() && attacking == false)
         {
+            //Calculate which angle the sword swing should start at and enable the attack
             attacking = true;
+            swordMesh.enabled = true;
             distanceSwung = 0.0f;
             startAngle = (90f - Target.eulerAngles.y) * Mathf.Deg2Rad;
+            Debug.Log("I can swing my sword sword");
         }
 
         if (attacking == true && distanceSwung < swingLength)
         {
+            
             angle = startAngle + distanceSwung;
 
+            //This makes it a nice circle
             positionOffset.Set(Mathf.Cos(angle) * CircleRadius,
                  ElevationOffset,
                  Mathf.Sin(angle) * CircleRadius);
             transform.position = Target.position + positionOffset;
 
-            //change the angle of the blade
+            //change the angle of the blade so it doesn't cut you
             Vector3 outwardDirection = transform.position - Target.position;
 
             transform.rotation = Quaternion.LookRotation(outwardDirection);
 
             distanceSwung += Time.deltaTime * RotationSpeed;
-            Debug.Log("PositionOffset" + positionOffset);
         }
         else
         {
             attacking = false;
+            swordMesh.enabled = false;
         }
 
     }
