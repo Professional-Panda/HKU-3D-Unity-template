@@ -15,6 +15,10 @@ public class Sword_attack : MonoBehaviour
     private Vector3 positionOffset;
     private float angle;
 
+    private float startAngle;
+    private float distanceSwung;
+    public float swingLength = 3.5f;
+
     private bool attacking = false;
 
     private void OnEnable()
@@ -35,15 +39,20 @@ public class Sword_attack : MonoBehaviour
 
     void LateUpdate()
     {
-        if (playerAttackAction.WasPressedThisFrame())
+        if (playerAttackAction.WasPressedThisFrame() && attacking == false)
         {
             attacking = true;
+            distanceSwung = 0.0f;
+            startAngle = (90f - Target.eulerAngles.y) * Mathf.Deg2Rad;
         }
-        if (angle < 3.0 && attacking == true)
+
+        if (attacking == true && distanceSwung < swingLength)
         {
+            angle = startAngle + distanceSwung;
+
             positionOffset.Set(Mathf.Cos(angle) * CircleRadius,
-                ElevationOffset,
-                Mathf.Sin(angle) * CircleRadius);
+                 ElevationOffset,
+                 Mathf.Sin(angle) * CircleRadius);
             transform.position = Target.position + positionOffset;
 
             //change the angle of the blade
@@ -51,12 +60,11 @@ public class Sword_attack : MonoBehaviour
 
             transform.rotation = Quaternion.LookRotation(outwardDirection);
 
-            angle += Time.deltaTime * RotationSpeed;
+            distanceSwung += Time.deltaTime * RotationSpeed;
             Debug.Log("PositionOffset" + positionOffset);
         }
         else
         {
-            angle = 1 * Target.rotation.y;
             attacking = false;
         }
 
